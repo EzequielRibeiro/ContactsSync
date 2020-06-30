@@ -12,9 +12,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        DriveSync driveSync = new DriveSync();
+
         try {
-            driveSync.Sync();
+            DriveSync driveSync = new DriveSync(getApplicationContext());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (GeneralSecurityException e) {

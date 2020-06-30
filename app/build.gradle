@@ -4,6 +4,18 @@ android {
     compileSdkVersion 30
     buildToolsVersion "30.0.0"
 
+
+
+    signingConfigs {
+        release {
+            storeFile file("C:\\Users\\MDA\\IntelliJIDEAProjects\\ContactsSync\\contactskey.jks")
+            storePassword '123456'
+            keyAlias 'key'
+            keyPassword '123456'
+        }
+    }
+
+
     defaultConfig {
         applicationId "com.contacts.sync"
         minSdkVersion 16
