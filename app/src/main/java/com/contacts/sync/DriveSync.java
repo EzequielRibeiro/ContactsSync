@@ -2,6 +2,9 @@ package com.contacts.sync;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.AsyncTask;
+
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -25,11 +28,12 @@ import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
 
-public class DriveSync {
+public class DriveSync extends AsyncTask<String, Void, Void> {
     private static final String APPLICATION_NAME = "Contacts Sync";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+    private static String TOKENS_DIRECTORY_PATH = "tokens";
     private Drive service;
+    private static GoogleSignInAccount account;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -39,30 +43,12 @@ public class DriveSync {
     private static final String CREDENTIALS_FILE_PATH ="" ;
     private static Context context;
 
-    public DriveSync(Context context) throws IOException, GeneralSecurityException{
+    public DriveSync(Context context, GoogleSignInAccount account, String pathToken) throws IOException, GeneralSecurityException{
 
         this.context = context;
+        this.account = account;
+        TOKENS_DIRECTORY_PATH = pathToken;
 
-        // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
-        service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-
-        // Print the names and IDs for up to 10 files.
-        FileList result = service.files().list()
-                .setPageSize(10)
-                .setFields("nextPageToken, files(id, name)")
-                .execute();
-        List<File> files = result.getFiles();
-        if (files == null || files.isEmpty()) {
-            System.out.println("No files found.");
-        } else {
-            System.out.println("Files:");
-            for (File file : files) {
-                System.out.printf("%s (%s)\n", file.getName(), file.getId());
-            }
-        }
 
     }
 
@@ -106,6 +92,46 @@ public class DriveSync {
          System.out.println("File ID: " + file.getId());
      }
 
+    }
+
+    @Override
+    protected Void doInBackground(String... strings) {
+
+
+        // Build a new authorized API client service.
+        final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
+        try {
+            service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return null;
+    }
+
+    protected void onPostExecute(String string) {
+
+        FileList result = null;
+        try {
+            result = service.files().list()
+                    .setPageSize(10)
+                    .setFields("nextPageToken, files(id, name)")
+                    .execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        List<File> files = result.getFiles();
+        if (files == null || files.isEmpty()) {
+            System.out.println("No files found.");
+        } else {
+            System.out.println("Files:");
+            for (File file : files) {
+                System.out.printf("%s (%s)\n", file.getName(), file.getId());
+            }
+        }
     }
 
 }
