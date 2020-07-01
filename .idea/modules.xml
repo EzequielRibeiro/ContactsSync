@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Contacts Sync.iml" filepath="$PROJECT_DIR$/Contacts Sync.iml" group="Contacts Sync" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Contacts_Sync.iml" filepath="$PROJECT_DIR$/.idea/modules/Contacts_Sync.iml" group="Contacts_Sync" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="Contacts Sync/app" />
     </modules>
   </component>
