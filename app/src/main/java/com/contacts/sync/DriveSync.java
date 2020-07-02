@@ -43,14 +43,11 @@ import static com.contacts.sync.MainActivity.TAG;
 public class DriveSync extends AsyncTask<String, Void, Void> {
     private static final String APPLICATION_NAME = "Contacts Sync";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static String TOKENS_DIRECTORY_PATH = "tokens";
+    /* Global instance of the scopes required by this quickstart.
+      If modifying these scopes, delete your previously saved tokens/ folder.*/
+    private static String TOKENS_DIRECTORY_PATH;
     private Drive service;
     private static GoogleSignInAccount account;
-
-    /**
-     * Global instance of the scopes required by this quickstart.
-     * If modifying these scopes, delete your previously saved tokens/ folder.
-     */
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_METADATA_READONLY);
     private static final String CREDENTIALS_FILE_PATH ="" ;
     private static Context context;
