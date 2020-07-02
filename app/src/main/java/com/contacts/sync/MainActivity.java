@@ -18,16 +18,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.security.GeneralSecurityException;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -48,11 +39,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-    //client id Hpq9CebJQDV43w23e1kJBofw
-        String client_id = "134624384841-2dh7goh46sbhftu99da7h043bo27qcjk.apps.googleusercontent.com";
+
+        String client_id = "134624384841-tahcrouqs05li43ovtqu89cigd0cvb07.apps.googleusercontent.com";
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(client_id)
-                .requestServerAuthCode(client_id)
                 .requestEmail()
                 .build();
         GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -107,18 +97,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private String createFileToken(String token) throws IOException {
-        File file = new File(getApplicationContext().getPackageName() + File.separator + "token" + File.separator + "token.token" );
-        boolean f= false;
+        File fileRoot = new File( Environment.getExternalStorageDirectory()+File.separator, "tokens");
 
-        f = file.createNewFile();
+        if(!fileRoot.exists())
+            fileRoot.mkdirs();
 
-        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(file));
-        outputStreamWriter.write(token);
-        outputStreamWriter.close();
+        File tokenFile = new File(fileRoot,"token");
+        FileWriter writer = new FileWriter(tokenFile,true);
+        writer.write(token);
+        writer.flush();
+        writer.close();
+        Log.w(TAG,"Token path="+tokenFile.getAbsoluteFile().toString());
+        Log.w(TAG,"Token file="+readFromFile(tokenFile.getAbsoluteFile().toString()));
 
-        Log.w(TAG,"Token file="+readFromFile(file.getAbsoluteFile().toString()));
-
-        return file.getParent();
+        return tokenFile.getParent();
 
     }
 

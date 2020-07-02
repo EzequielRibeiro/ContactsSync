@@ -48,7 +48,7 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
     private static String TOKENS_DIRECTORY_PATH;
     private Drive service;
     private static GoogleSignInAccount account;
-    private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_METADATA_READONLY);
+    private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
     private static final String CREDENTIALS_FILE_PATH ="" ;
     private static Context context;
     private static GoogleTokenResponse tokenResponse;
@@ -58,11 +58,7 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
         this.context = context;
         this.account = account;
         TOKENS_DIRECTORY_PATH = pathToken;
-
-
-
-
-
+        Log.w(TAG,"TOKENS_DIRECTORY_PATH="+TOKENS_DIRECTORY_PATH);
     }
 
     /**
@@ -125,7 +121,7 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
 
 
       //  return credential;
-
+        Log.w(TAG,"ClientID="+clientSecrets.getDetails().getClientId());
         GoogleAuthorizationCodeFlow authorizationCodeFlow = new GoogleAuthorizationCodeFlow
                 .Builder(HTTP_TRANSPORT,JSON_FACTORY,clientSecrets.getDetails().getClientId(),clientSecrets.getDetails().getClientSecret(),
                 SCOPES)
