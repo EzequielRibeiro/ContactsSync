@@ -44,23 +44,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         buttonSign = findViewById(R.id.buttonSign);
         buttonSign.setOnClickListener(this);
-
-
-
-
     }
 
     @Override
     public void onClick(View view) {
     //client id Hpq9CebJQDV43w23e1kJBofw
+        String client_id = "134624384841-2dh7goh46sbhftu99da7h043bo27qcjk.apps.googleusercontent.com";
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("134624384841-bpb660950286ktooemd6f19sf9ejlcrl.apps.googleusercontent.com")
+                .requestIdToken(client_id)
+                .requestServerAuthCode(client_id)
                 .requestEmail()
                 .build();
         GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
-
 
     }
 
@@ -81,16 +78,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             // Signed in successfully, show authenticated UI.
-            updateUI(account,null);
+            updateUI(account);
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
-            updateUI(null,e);
+            Log.w(TAG, "ApiException code=" + e.getStatusCode());
+
         }
     }
 
-    private void updateUI(GoogleSignInAccount account, ApiException e){
+    private void updateUI(GoogleSignInAccount account){
 
         if(account != null) {
             Log.w(TAG, "account e-mail=" + account.getEmail());
@@ -105,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
         else{
-        Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+        Log.w(TAG, "GoogleSignInAccount= " + "isNull");
         }
     }
 
