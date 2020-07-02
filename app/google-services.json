@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "134624384841",
+    "firebase_url": "https://contacts-sync-1593528327386.firebaseio.com",
+    "project_id": "contacts-sync-1593528327386",
+    "storage_bucket": "contacts-sync-1593528327386.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:134624384841:android:f71c8cb95739e642816c98",
+        "android_client_info": {
+          "package_name": "com.contacts.sync"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "134624384841-tahcrouqs05li43ovtqu89cigd0cvb07.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ30eN9iIuLP1UifpWDKgQmx5-VdHZ2yI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "134624384841-tahcrouqs05li43ovtqu89cigd0cvb07.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

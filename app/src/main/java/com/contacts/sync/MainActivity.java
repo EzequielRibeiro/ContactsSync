@@ -17,6 +17,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,12 +36,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int RC_SIGN_IN = 0;
     public static final String TAG =  "Contacts Sync";
     private Button buttonSign;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         buttonSign = findViewById(R.id.buttonSign);
         buttonSign.setOnClickListener(this);
 
@@ -53,7 +55,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
     //client id Hpq9CebJQDV43w23e1kJBofw
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("134624384841-bpb660950286ktooemd6f19sf9ejlcrl.apps.googleusercontent.com")
+                .requestIdToken("134624384841-tahcrouqs05li43ovtqu89cigd0cvb07.apps.googleusercontent.com")
+                .requestServerAuthCode("134624384841-tahcrouqs05li43ovtqu89cigd0cvb07.apps.googleusercontent.com")
                 .requestEmail()
                 .build();
         GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -79,6 +82,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+
+            if(account != null) {
+                Log.w(TAG, "account e-mail=" + account.getEmail());
+                Log.w(TAG, "token=" + account.getIdToken());
+            }
 
             // Signed in successfully, show authenticated UI.
             updateUI(account,null);
