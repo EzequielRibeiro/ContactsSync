@@ -10,13 +10,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Task;
+import com.google.api.services.drive.DriveScopes;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
@@ -26,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int RC_SIGN_IN = 0;
     public static final String TAG =  "Contacts Sync";
     private static String TOKENS_DIRECTORY_PATH = "";
-    private Button buttonSign;
+    private SignInButton buttonSign;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +43,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
 
         String client_id = "134624384841-tahcrouqs05li43ovtqu89cigd0cvb07.apps.googleusercontent.com";
+       // client_id = "134624384841-2dh7goh46sbhftu99da7h043bo27qcjk.apps.googleusercontent.com";
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(client_id)
                 .requestEmail()
+                .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
+                .requestServerAuthCode(client_id)
+                .requestId()
+                .requestProfile()
                 .build();
         GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
