@@ -175,37 +175,35 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
                                       HttpHeaders responseHeaders)
                         throws IOException {
                     // Handle error
-                    System.err.println(e.getMessage());
+                    Log.w(TAG,"Permission error="+e.getMessage());
                 }
 
                 @Override
                 public void onSuccess(Permission permission,
                                       HttpHeaders responseHeaders)
                         throws IOException {
-                    System.out.println("Permission ID: " + permission.getId());
+                    Log.e(TAG,"Permission ID: " + permission.getId());
                 }
             };
             BatchRequest batch = driveService.batch();
             Permission userPermission = new Permission()
                     .setType("user")
                     .setRole("writer")
+                    .setRole("reader")
                     .setEmailAddress(account.getEmail());
             driveService.permissions().create(fileId, userPermission)
                     .setFields("id")
                     .queue(batch, callback);
 
-            Permission domainPermission = new Permission()
-                    .setType("domain")
+         /*Permission domainPermission = new Permission()
+                    .setType("user")
                     .setRole("reader")
                     .setDomain("example.com");
             driveService.permissions().create(fileId, domainPermission)
                     .setFields("id")
-                    .queue(batch, callback);
+                    .queue(batch, callback);*/
 
             batch.execute();
-
-
-
 
             OutputStream outputStream = new ByteArrayOutputStream();
             driveService.files().get(fileId)
