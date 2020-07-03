@@ -12,19 +12,21 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleOAuthConstants;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.googleapis.batch.BatchRequest;
+import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
+import com.google.api.client.googleapis.json.GoogleJsonError;
 import com.google.api.client.http.FileContent;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import com.google.api.services.drive.model.Permission;
+
+import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +40,7 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
     /* Global instance of the scopes required by this quickstart.
       If modifying these scopes, delete your previously saved tokens/ folder.*/
     private static String TOKENS_DIRECTORY_PATH;
-    private Drive service;
+    private Drive driveService;
     private static GoogleSignInAccount account;
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_FILE);
     private static final String CREDENTIALS_FILE_PATH ="" ;
@@ -129,7 +131,7 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
             authorizationUrl.setRedirectUri(GoogleOAuthConstants.OOB_REDIRECT_URI);
             GoogleAuthorizationCodeTokenRequest tokenRequest = authorizationCodeFlow.newTokenRequest(account.getServerAuthCode());
             tokenRequest.setRedirectUri(GoogleOAuthConstants.OOB_REDIRECT_URI);
-            GoogleTokenResponse tokenResponse = tokenRequest.execute();
+            tokenResponse = tokenRequest.execute();
             credential = authorizationCodeFlow.createAndStoreCredential(tokenResponse, account.getId());
         }
 
@@ -145,8 +147,8 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
         java.io.File filePath = new java.io.File(url);
         FileContent mediaContent = new FileContent("image/jpeg", filePath);
 
-     if(service != null) {
-         File file = service.files().create(fileMetadata, mediaContent)
+     if(driveService != null) {
+         File file = driveService.files().create(fileMetadata, mediaContent)
                  .setFields("id")
                  .execute();
          System.out.println("File ID: " + file.getId());
@@ -160,12 +162,56 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
         try {
-            Drive drive =
+            driveService =
                     new Drive.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance(), getCredentials(HTTP_TRANSPORT))
                             .setApplicationName("Contacts Sync")
                             .build();
-            File file = drive.files().get("apk/app-release-noad.apk").execute();
-            Log.w("Tamanho: ",String.valueOf(file.getSize()));
+          //  File file = drive.files().get("apk/app-release-noad.apk").execute();
+
+            String fileId = "1SRnuGH0rtBz_R-K-121HnMgtG7pCh-Y7";
+            JsonBatchCallback<Permission> callback = new JsonBatchCallback<Permission>() {
+                @Override
+                public void onFailure(GoogleJsonError e,
+                                      HttpHeaders responseHeaders)
+                        throws IOException {
+                    // Handle error
+                    System.err.println(e.getMessage());
+                }
+
+                @Override
+                public void onSuccess(Permission permission,
+                                      HttpHeaders responseHeaders)
+                        throws IOException {
+                    System.out.println("Permission ID: " + permission.getId());
+                }
+            };
+            BatchRequest batch = driveService.batch();
+            Permission userPermission = new Permission()
+                    .setType("user")
+                    .setRole("writer")
+                    .setEmailAddress(account.getEmail());
+            driveService.permissions().create(fileId, userPermission)
+                    .setFields("id")
+                    .queue(batch, callback);
+
+            Permission domainPermission = new Permission()
+                    .setType("domain")
+                    .setRole("reader")
+                    .setDomain("example.com");
+            driveService.permissions().create(fileId, domainPermission)
+                    .setFields("id")
+                    .queue(batch, callback);
+
+            batch.execute();
+
+
+
+
+            OutputStream outputStream = new ByteArrayOutputStream();
+            driveService.files().get(fileId)
+                    .executeMediaAndDownloadTo(outputStream);
+
+            //Log.w("Tamanho: ",String.valueOf(file.getSize()));
             // Get profile info from ID token
             GoogleIdToken idToken = tokenResponse.parseIdToken();
             GoogleIdToken.Payload payload = idToken.getPayload();
@@ -177,6 +223,8 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
             String locale = (String) payload.get("locale");
             String familyName = (String) payload.get("family_name");
             String givenName = (String) payload.get("given_name");
+
+            Log.w(TAG,userId+email+emailVerified+name+pictureUrl+locale+familyName+givenName);
 
 
         } catch (IOException e) {
@@ -191,7 +239,7 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
 
         FileList result = null;
         try {
-            result = service.files().list()
+            result = driveService.files().list()
                     .setPageSize(10)
                     .setFields("nextPageToken, files(id, name)")
                     .execute();
