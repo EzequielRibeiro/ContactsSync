@@ -116,10 +116,13 @@ public class DriveSync extends AsyncTask<String, Void, Void> {
         GoogleAuthorizationCodeFlow authorizationCodeFlow = new GoogleAuthorizationCodeFlow
                 .Builder(HTTP_TRANSPORT,JSON_FACTORY,clientSecrets.getDetails().getClientId(),clientSecrets.getDetails().getClientSecret(),
                 SCOPES)
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+                .setJsonFactory(new JacksonFactory().createJsonParser(new InputStreamReader(in)).getFactory())
+              //  .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+
                 .build();
         String userId = account.getId();
         Log.w(TAG,"userid="+userId);
+        Log.w(TAG,"CodeFlowClientId="+authorizationCodeFlow.getClientId());
         Credential credential = authorizationCodeFlow.loadCredential(userId);
         if (credential == null) {
             GoogleAuthorizationCodeRequestUrl authorizationUrl = authorizationCodeFlow.newAuthorizationUrl();
