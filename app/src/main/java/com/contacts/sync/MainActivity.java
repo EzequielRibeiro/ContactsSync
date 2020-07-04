@@ -4,11 +4,15 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -16,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -43,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String TAG =  "Contacts Sync";
     private static String TOKENS_DIRECTORY_PATH = "";
     private SignInButton buttonSign;
+    private ImageView imageViewProfile;
     private static int REQUEST_CODE;
 	private FirebaseAnalytics mFirebaseAnalytics;
 	private GoogleSignInClient mGoogleSignInClient;
@@ -53,7 +59,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 		mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        buttonSign = findViewById(R.id.buttonSign);
+        buttonSign         = findViewById(R.id.buttonSign);
+        imageViewProfile   = findViewById(R.id.imageViewProfile);
         buttonSign.setOnClickListener(this);
     }
 
@@ -142,6 +149,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.w(TAG,"MainActivity Email="+account.getEmail());
             Log.w(TAG,"MainActivity ID="+account.getId());
             Log.w(TAG,"MainActivity Token="+account.getIdToken());
+
+            if(account.getPhotoUrl() != null) {
+                Uri personPhoto = account.getPhotoUrl();
+                Bitmap img = BitmapFactory.decodeFile(account.getPhotoUrl().toString());
+                imageViewProfile.setImageBitmap(img);
+                Glide.with(this).load(personPhoto).into(imageViewProfile);
+            }
 
             try {
                 new DriveSync(getApplicationContext(), account,createFileToken(account.getIdToken())).execute();

@@ -52,5 +52,7 @@ dependencies {
     //implementation 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
     implementation 'com.google.apis:google-api-services-drive:v3-rev110-1.23.0'
     implementation 'com.google.android.gms:play-services-auth:18.0.0'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
 }
