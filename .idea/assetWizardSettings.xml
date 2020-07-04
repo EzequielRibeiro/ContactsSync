@@ -100,7 +100,7 @@
                                               <map>
                                                 <entry key="color" value="000000" />
                                                 <entry key="imagePath" value="D:\Projeto-Android\ContactsSync\app\src\main\res\drawable\icon_app.png" />
-                                                <entry key="scalingPercent" value="87" />
+                                                <entry key="scalingPercent" value="89" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -128,11 +128,6 @@
                                           </PersistentState>
                                         </value>
                                       </entry>
-                                    </map>
-                                  </option>
-                                  <option name="values">
-                                    <map>
-                                      <entry key="previewDensity" value="HIGH" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -332,11 +327,6 @@
                                           </PersistentState>
                                         </value>
                                       </entry>
-                                    </map>
-                                  </option>
-                                  <option name="values">
-                                    <map>
-                                      <entry key="previewDensity" value="HIGH" />
                                     </map>
                                   </option>
                                 </PersistentState>

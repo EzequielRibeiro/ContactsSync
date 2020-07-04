@@ -1,9 +1,16 @@
 package com.contacts.sync;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -29,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String TAG =  "Contacts Sync";
     private static String TOKENS_DIRECTORY_PATH = "";
     private SignInButton buttonSign;
+    private static int REQUEST_CODE;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +46,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         buttonSign = findViewById(R.id.buttonSign);
         buttonSign.setOnClickListener(this);
+
+
+
     }
 
-    @Override
-    public void onClick(View view) {
+    private void googleSign(){
 
-        String client_id = "134624384841-tahcrouqs05li43ovtqu89cigd0cvb07.apps.googleusercontent.com";
-      //  client_id = "134624384841-2dh7goh46sbhftu99da7h043bo27qcjk.apps.googleusercontent.com";
+        String client_id = "754235421183-b68kj53at1er2h8on5ru1ppdg9apjbp6.apps.googleusercontent.com";
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(client_id)
                 .requestEmail()
@@ -59,6 +69,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void onClick(View view) {
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            requestPermission();
+
+        }else {
+           googleSign();
+        }
+
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -66,15 +90,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (requestCode == RC_SIGN_IN) {
             // The Task returned from this call is always completed, no need to attach
             // a listener.
+            Log.w(TAG,"MainActivity requestCode="+String.valueOf(requestCode));
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
     }
 
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            // Signed in successfully, show authenticated UI.
+            Log.w(TAG,"MainActivity Email="+account.getEmail());
+            Log.w(TAG,"MainActivity ID="+account.getId());
+            Log.w(TAG,"MainActivity Token="+account.getIdToken());
             updateUI(account);
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
@@ -89,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(account != null) {
             Log.w(TAG, "account e-mail=" + account.getEmail());
             Log.w(TAG, "token=" + account.getIdToken());
+
 
             try {
                 new DriveSync(getApplicationContext(), account,createFileToken(account.getIdToken())).execute();
@@ -151,5 +180,68 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         return ret;
     }
+
+    private void showRequestMsg(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("permisssssss")
+                .setTitle("title");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_CONTACTS,
+                                Manifest.permission.WRITE_CONTACTS,
+                                Manifest.permission.ACCESS_NOTIFICATION_POLICY},REQUEST_CODE);
+
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                 finish();
+            }
+        });
+
+        builder.show();
+
+    }
+
+    public void requestPermission() {
+
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_NOTIFICATION_POLICY) != PackageManager.PERMISSION_GRANTED) {
+
+                    showRequestMsg();
+
+            }
+        }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == REQUEST_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                googleSign();
+
+            } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                        ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                        ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED ||
+                        ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED ||
+                        ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_NOTIFICATION_POLICY) != PackageManager.PERMISSION_GRANTED)
+                {
+
+                    showRequestMsg();
+
+                }
+            }
+        }
+    }
+
 
 }
