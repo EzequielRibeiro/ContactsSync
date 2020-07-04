@@ -1,12 +1,6 @@
 package com.contacts.sync;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,21 +9,34 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
-import com.google.android.gms.common.SignInButton;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.api.services.drive.DriveScopes;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private int RC_SIGN_IN = 0;
@@ -37,18 +44,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static String TOKENS_DIRECTORY_PATH = "";
     private SignInButton buttonSign;
     private static int REQUEST_CODE;
+	private FirebaseAnalytics mFirebaseAnalytics;
+	private GoogleSignInClient mGoogleSignInClient;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+		mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         buttonSign = findViewById(R.id.buttonSign);
         buttonSign.setOnClickListener(this);
-
-
-
     }
 
     private void googleSign(){
@@ -62,15 +68,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .requestId()
                 .requestProfile()
                 .build();
-        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+
+
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        mGoogleSignInClient.silentSignIn()
+                .addOnCompleteListener(
+                        this,
+                        new OnCompleteListener<GoogleSignInAccount>() {
+                            @Override
+                            public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
+                                handleSignInResult(task);
+                            }
+                        });
+
 
     }
 
     @Override
-    public void onClick(View view) {
+    protected void onResume() {
+        super.onResume();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermission();
+        }else {
+            googleSign();
+        }
+    }
 
+    @Override
+    public void onClick(View view) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
@@ -100,13 +125,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            Log.w(TAG,"MainActivity Email="+account.getEmail());
-            Log.w(TAG,"MainActivity ID="+account.getId());
-            Log.w(TAG,"MainActivity Token="+account.getIdToken());
             updateUI(account);
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
+            updateUI(null);
             Log.w(TAG, "ApiException code=" + e.getStatusCode());
 
         }
@@ -115,9 +138,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void updateUI(GoogleSignInAccount account){
 
         if(account != null) {
-            Log.w(TAG, "account e-mail=" + account.getEmail());
-            Log.w(TAG, "token=" + account.getIdToken());
 
+            Log.w(TAG,"MainActivity Email="+account.getEmail());
+            Log.w(TAG,"MainActivity ID="+account.getId());
+            Log.w(TAG,"MainActivity Token="+account.getIdToken());
 
             try {
                 new DriveSync(getApplicationContext(), account,createFileToken(account.getIdToken())).execute();
@@ -129,6 +153,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         else{
         Log.w(TAG, "GoogleSignInAccount= " + "isNull");
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            startActivityForResult(signInIntent, RC_SIGN_IN);
+
         }
     }
 
@@ -218,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     showRequestMsg();
 
-            }
+            }else{ googleSign();  }
         }
 
     @Override
@@ -242,6 +269,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
+
+
 
 
 }
